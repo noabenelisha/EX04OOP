@@ -1,0 +1,111 @@
+using System;
+using System.Collections.Generic;
+
+// מחלקת Fraction עם operator overloading
+public class Fraction
+{
+    public int Numerator { get; private set; }
+    public int Denominator { get; private set; }
+
+    public Fraction(int numerator, int denominator)
+    {
+        if (denominator == 0)
+            throw new ArgumentException("Denominator cannot be zero");
+
+        Numerator = numerator;
+        Denominator = denominator;
+        Reduce();
+    }
+
+    private static int GCD(int a, int b)
+    {
+        a = Math.Abs(a);
+        b = Math.Abs(b);
+        while (b != 0)
+        {
+            int temp = b;
+            b = a % b;
+            a = temp;
+        }
+        return a;
+    }
+
+    private void Reduce()
+    {
+        int gcd = GCD(Numerator, Denominator);
+        Numerator /= gcd;
+        Denominator /= gcd;
+        if (Denominator < 0)
+        {
+            Numerator = -Numerator;
+            Denominator = -Denominator;
+        }
+    }
+
+    public static Fraction operator +(Fraction a, Fraction b)
+    {
+        int numerator = a.Numerator * b.Denominator + b.Numerator * a.Denominator;
+        int denominator = a.Denominator * b.Denominator;
+        return new Fraction(numerator, denominator);
+    }
+
+    public override string ToString()
+    {
+        return $"{Numerator}/{Denominator}";
+    }
+}
+
+// מחלקה גנרית ליצירת לוח פעולה
+public class GenericOperationTable<T>
+{
+    public delegate T OpFunc(T x, T y);
+
+    private List<T> rowValues;
+    private List<T> colValues;
+    private OpFunc op;
+
+    public GenericOperationTable(List<T> _rowValues, List<T> _colValues, OpFunc _op)
+    {
+        rowValues = _rowValues;
+        colValues = _colValues;
+        op = _op;
+    }
+
+    public void Print()
+    {
+        // כותרת עמודות
+        Console.Write("\t");
+        foreach (var col in colValues)
+            Console.Write(col + "\t");
+        Console.WriteLine();
+
+        // שורות
+        foreach (var row in rowValues)
+        {
+            Console.Write(row + "\t");
+            foreach (var col in colValues)
+                Console.Write(op(row, col) + "\t");
+            Console.WriteLine();
+        }
+    }
+}
+
+// דוגמת שימוש - לוח חיבור של שברים
+class Program
+{
+    static void Main()
+    {
+        List<Fraction> fractions = new List<Fraction>();
+        for (int i = 1; i <= 12; i++)
+        {
+            fractions.Add(new Fraction(i, 12));
+        }
+
+        // יצירת לוח חיבור
+        GenericOperationTable<Fraction> additionTable =
+            new GenericOperationTable<Fraction>(fractions, fractions, (a, b) => a + b);
+
+        // הדפסת הלוח
+        additionTable.Print();
+    }
+}
